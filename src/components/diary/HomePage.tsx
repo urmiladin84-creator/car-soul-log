@@ -1,4 +1,5 @@
 import { Drive, Fuel, Service } from "@/lib/storageService";
+import { useCurrency } from "@/hooks/useCurrency";
 import { StatCard } from "@/components/diary/StatCard";
 import { SectionHeader } from "@/components/diary/SectionHeader";
 import { PrimaryButton } from "@/components/diary/PrimaryButton";
