@@ -20,6 +20,7 @@ export function AddFuelModal({
   onClose: () => void;
   onSaved?: () => void;
 }) {
+  const { format, info } = useCurrency();
   const today = new Date().toISOString().slice(0, 10);
   const [date, setDate] = useState(today);
   const [odometer, setOdometer] = useState("");
@@ -78,7 +79,7 @@ export function AddFuelModal({
             <input type="number" inputMode="decimal" step="0.01" className={inputCls} value={liters} onChange={(e) => setLiters(e.target.value)} placeholder="0" />
           </div>
           <div>
-            <label className={labelCls}>Price / liter</label>
+            <label className={labelCls}>Price / liter ({info.symbol})</label>
             <input type="number" inputMode="decimal" className={inputCls} value={price} onChange={(e) => setPrice(e.target.value)} placeholder="0" />
           </div>
         </div>
@@ -90,7 +91,7 @@ export function AddFuelModal({
         </div>
         <div className="rounded-xl bg-gradient-accent p-4 text-accent-foreground">
           <div className="text-xs uppercase tracking-wide opacity-80">Total cost</div>
-          <div className="text-2xl font-bold mt-1">Rp {total.toLocaleString()}</div>
+          <div className="text-2xl font-bold mt-1">{format(total)}</div>
         </div>
         <div className="flex gap-3 pt-2">
           <PrimaryButton type="button" variant="ghost" className="flex-1" onClick={onClose}>Cancel</PrimaryButton>

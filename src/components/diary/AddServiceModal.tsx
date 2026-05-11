@@ -2,6 +2,7 @@ import { useState } from "react";
 import { ModalWrapper } from "./ModalWrapper";
 import { PrimaryButton } from "./PrimaryButton";
 import { addService } from "@/lib/storageService";
+import { useCurrency } from "@/hooks/useCurrency";
 import { toast } from "./Toaster";
 
 const inputCls =
