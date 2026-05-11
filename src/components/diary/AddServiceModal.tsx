@@ -29,6 +29,7 @@ export function AddServiceModal({
   onClose: () => void;
   onSaved?: () => void;
 }) {
+  const { info } = useCurrency();
   const today = new Date().toISOString().slice(0, 10);
   const [date, setDate] = useState(today);
   const [odometer, setOdometer] = useState("");
@@ -88,7 +89,7 @@ export function AddServiceModal({
           <input className={inputCls} value={workshop} onChange={(e) => setWorkshop(e.target.value)} placeholder="AutoCare Garage" />
         </div>
         <div>
-          <label className={labelCls}>Cost (Rp)</label>
+          <label className={labelCls}>Cost ({info.symbol})</label>
           <input type="number" inputMode="decimal" className={inputCls} value={cost} onChange={(e) => setCost(e.target.value)} placeholder="0" />
         </div>
         <div>

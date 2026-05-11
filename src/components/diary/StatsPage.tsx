@@ -1,4 +1,5 @@
 import { Drive, Fuel, Service } from "@/lib/storageService";
+import { useCurrency } from "@/hooks/useCurrency";
 import { StatCard } from "@/components/diary/StatCard";
 import { SectionHeader } from "@/components/diary/SectionHeader";
 import { SimpleBarChart } from "@/components/diary/SimpleBarChart";
@@ -14,6 +15,7 @@ const monthLabel = (k: string) => {
 };
 
 export function StatsPage({ drives, fuels, services }: { drives: Drive[]; fuels: Fuel[]; services: Service[] }) {
+  const { formatShort, info } = useCurrency();
   const totalKm = drives.reduce((s, d) => s + d.distance, 0);
   const longest = drives.reduce((m, d) => Math.max(m, d.distance), 0);
   const totalSpent = fuels.reduce((s, f) => s + f.total, 0) + services.reduce((s, x) => s + x.cost, 0);
@@ -50,7 +52,7 @@ export function StatsPage({ drives, fuels, services }: { drives: Drive[]; fuels:
       <section className="grid grid-cols-2 gap-3">
         <StatCard label="Total KM" value={totalKm.toLocaleString()} />
         <StatCard label="Longest Drive" value={`${longest} km`} />
-        <StatCard label="Total Spent" value={`Rp ${(totalSpent / 1000).toFixed(0)}k`} />
+        <StatCard label="Total Spent" value={formatShort(totalSpent)} />
         <StatCard label="Drives" value={drives.length} />
       </section>
 
@@ -60,8 +62,8 @@ export function StatsPage({ drives, fuels, services }: { drives: Drive[]; fuels:
       </section>
 
       <section className="rounded-2xl bg-gradient-card border border-border/40 p-4 shadow-card">
-        <SectionHeader title="Spending per month" subtitle="Fuel + service" />
-        <SimpleBarChart data={spendingByMonth} formatValue={(v) => `${(v / 1000).toFixed(0)}k`} />
+        <SectionHeader title="Spending per month" subtitle={`Fuel + service · ${info.code}`} />
+        <SimpleBarChart data={spendingByMonth} formatValue={(v) => `${info.symbol}${v >= 1000 ? (v / 1000).toFixed(1) + "k" : v.toFixed(0)}`} />
       </section>
     </div>
   );
