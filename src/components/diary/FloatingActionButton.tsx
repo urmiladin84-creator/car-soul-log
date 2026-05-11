@@ -29,7 +29,7 @@ export function FloatingActionButton({ onAddDrive, onAddFuel, onAddService }: Pr
           onClick={() => setOpen(false)}
         />
       )}
-      <div className="fixed bottom-24 right-5 z-40 flex flex-col items-end gap-3 safe-bottom">
+      <div className="fixed bottom-16 left-1/2 -translate-x-1/2 z-40 flex flex-col items-center gap-3 safe-bottom">
         {open && (
           <>
             {action("Add Service", <Wrench size={18} />, onAddService, "0ms")}
@@ -39,10 +39,10 @@ export function FloatingActionButton({ onAddDrive, onAddFuel, onAddService }: Pr
         )}
         <button
           onClick={() => setOpen((v) => !v)}
-          className="no-tap h-14 w-14 rounded-full bg-gradient-accent shadow-accent flex items-center justify-center text-accent-foreground active:scale-90 transition"
+          className="no-tap h-16 w-16 rounded-full bg-gradient-accent shadow-accent flex items-center justify-center text-accent-foreground active:scale-90 transition ring-4 ring-background"
           aria-label="Quick add"
         >
-          {open ? <X size={26} /> : <Plus size={26} />}
+          {open ? <X size={28} /> : <Plus size={28} />}
         </button>
       </div>
     </>
