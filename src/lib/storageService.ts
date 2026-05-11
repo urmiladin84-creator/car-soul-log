@@ -43,7 +43,82 @@ const KEYS = {
   fuels: "myDrivingDiary_fuels",
   services: "myDrivingDiary_services",
   settings: "myDrivingDiary_settings",
+  currency: "myDrivingDiary_currency",
 } as const;
+
+export type CurrencyCode = "USD" | "EUR" | "GBP" | "IDR" | "JPY" | "INR" | "AUD" | "CAD";
+
+export interface CurrencyInfo {
+  code: CurrencyCode;
+  symbol: string;
+  label: string;
+  locale: string;
+  decimals: number;
+}
+
+export const CURRENCIES: CurrencyInfo[] = [
+  { code: "USD", symbol: "$", label: "US Dollar", locale: "en-US", decimals: 2 },
+  { code: "EUR", symbol: "€", label: "Euro", locale: "de-DE", decimals: 2 },
+  { code: "GBP", symbol: "£", label: "British Pound", locale: "en-GB", decimals: 2 },
+  { code: "IDR", symbol: "Rp", label: "Indonesian Rupiah", locale: "id-ID", decimals: 0 },
+  { code: "JPY", symbol: "¥", label: "Japanese Yen", locale: "ja-JP", decimals: 0 },
+  { code: "INR", symbol: "₹", label: "Indian Rupee", locale: "en-IN", decimals: 2 },
+  { code: "AUD", symbol: "A$", label: "Australian Dollar", locale: "en-AU", decimals: 2 },
+  { code: "CAD", symbol: "C$", label: "Canadian Dollar", locale: "en-CA", decimals: 2 },
+];
+
+export const DEFAULT_CURRENCY: CurrencyCode = "USD";
+const CURRENCY_EVENT = "myDrivingDiary:currencyChanged";
+
+export const getCurrency = (): CurrencyCode => {
+  if (!isBrowser()) return DEFAULT_CURRENCY;
+  const v = localStorage.getItem(KEYS.currency) as CurrencyCode | null;
+  return v && CURRENCIES.some((c) => c.code === v) ? v : DEFAULT_CURRENCY;
+};
+
+export const setCurrency = (code: CurrencyCode) => {
+  if (!isBrowser()) return;
+  localStorage.setItem(KEYS.currency, code);
+  window.dispatchEvent(new CustomEvent(CURRENCY_EVENT, { detail: code }));
+};
+
+export const getCurrencyInfo = (code?: CurrencyCode): CurrencyInfo => {
+  const c = code ?? getCurrency();
+  return CURRENCIES.find((x) => x.code === c) ?? CURRENCIES[0];
+};
+
+export const formatMoney = (amount: number, code?: CurrencyCode): string => {
+  const info = getCurrencyInfo(code);
+  try {
+    return new Intl.NumberFormat(info.locale, {
+      style: "currency",
+      currency: info.code,
+      maximumFractionDigits: info.decimals,
+      minimumFractionDigits: 0,
+    }).format(amount || 0);
+  } catch {
+    return `${info.symbol} ${(amount || 0).toLocaleString()}`;
+  }
+};
+
+export const formatMoneyShort = (amount: number, code?: CurrencyCode): string => {
+  const info = getCurrencyInfo(code);
+  const abs = Math.abs(amount);
+  if (abs >= 1_000_000) return `${info.symbol}${(amount / 1_000_000).toFixed(1)}M`;
+  if (abs >= 1_000) return `${info.symbol}${(amount / 1_000).toFixed(0)}k`;
+  return formatMoney(amount, info.code);
+};
+
+export const onCurrencyChange = (cb: (code: CurrencyCode) => void) => {
+  if (!isBrowser()) return () => {};
+  const handler = (e: Event) => cb(((e as CustomEvent).detail as CurrencyCode) ?? getCurrency());
+  window.addEventListener(CURRENCY_EVENT, handler);
+  window.addEventListener("storage", handler);
+  return () => {
+    window.removeEventListener(CURRENCY_EVENT, handler);
+    window.removeEventListener("storage", handler);
+  };
+};
 
 const isBrowser = () => typeof window !== "undefined";
 

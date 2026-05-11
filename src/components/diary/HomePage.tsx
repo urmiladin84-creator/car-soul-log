@@ -1,4 +1,5 @@
 import { Drive, Fuel, Service } from "@/lib/storageService";
+import { useCurrency } from "@/hooks/useCurrency";
 import { StatCard } from "@/components/diary/StatCard";
 import { SectionHeader } from "@/components/diary/SectionHeader";
 import { PrimaryButton } from "@/components/diary/PrimaryButton";
@@ -15,6 +16,7 @@ interface Props {
 }
 
 export function HomePage({ drives, fuels, services, onAddDrive, onAddFuel, onAddService, onOpenDrive }: Props) {
+  const { formatShort } = useCurrency();
   const totalKm = drives.reduce((s, d) => s + d.distance, 0);
   const totalFuel = fuels.reduce((s, f) => s + f.total, 0);
   const totalService = services.reduce((s, x) => s + x.cost, 0);
@@ -31,8 +33,8 @@ export function HomePage({ drives, fuels, services, onAddDrive, onAddFuel, onAdd
       <section className="grid grid-cols-2 gap-3">
         <StatCard label="Total Drives" value={drives.length} icon={<Car size={16} />} />
         <StatCard label="KM Driven" value={totalKm.toLocaleString()} hint="kilometers" icon={<Gauge size={16} />} />
-        <StatCard label="Fuel Spent" value={`Rp ${(totalFuel / 1000).toFixed(0)}k`} icon={<FuelIcon size={16} />} />
-        <StatCard label="Service Spent" value={`Rp ${(totalService / 1000).toFixed(0)}k`} icon={<Wrench size={16} />} />
+        <StatCard label="Fuel Spent" value={formatShort(totalFuel)} icon={<FuelIcon size={16} />} />
+        <StatCard label="Service Spent" value={formatShort(totalService)} icon={<Wrench size={16} />} />
       </section>
 
       <section>

@@ -1,4 +1,5 @@
 import { Drive, Fuel, Service } from "@/lib/storageService";
+import { useCurrency } from "@/hooks/useCurrency";
 
 type Item =
   | { kind: "drive"; date: string; data: Drive }
@@ -6,6 +7,7 @@ type Item =
   | { kind: "service"; date: string; data: Service };
 
 export function TimelineItem({ item }: { item: Item }) {
+  const { format } = useCurrency();
   const icon = item.kind === "drive" ? "🚗" : item.kind === "fuel" ? "⛽" : "🧰";
   const title =
     item.kind === "drive"
@@ -17,8 +19,8 @@ export function TimelineItem({ item }: { item: Item }) {
     item.kind === "drive"
       ? `${item.data.distance} km · ${item.data.purpose}`
       : item.kind === "fuel"
-      ? `Rp ${item.data.total.toLocaleString()}`
-      : `Rp ${item.data.cost.toLocaleString()}`;
+      ? format(item.data.total)
+      : format(item.data.cost);
 
   return (
     <div className="flex gap-3">
