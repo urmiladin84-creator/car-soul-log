@@ -1,6 +1,4 @@
-import { createFileRoute } from "@tanstack/react-router";
 import { useEffect, useState } from "react";
-import { ClientOnly } from "@tanstack/react-router";
 import {
   Drive,
   Fuel,
@@ -8,6 +6,7 @@ import {
   getDrives,
   getFuels,
   getServices,
+  initStorage,
 } from "@/lib/storageService";
 import { BottomTabs, Tab } from "@/components/diary/BottomTabs";
 import { FloatingActionButton } from "@/components/diary/FloatingActionButton";
@@ -22,18 +21,8 @@ import { AddServiceModal } from "@/components/diary/AddServiceModal";
 import { DriveDetailModal } from "@/components/diary/DriveDetailModal";
 import { Toaster } from "@/components/diary/Toaster";
 
-export const Route = createFileRoute("/")({
-  head: () => ({
-    meta: [
-      { title: "My Driving Diary" },
-      { name: "description", content: "Offline-first car diary for drives, fuel, and service." },
-      { name: "theme-color", content: "#0F172A" },
-    ],
-  }),
-  component: Index,
-});
-
-function App() {
+export default function App() {
+  const [ready, setReady] = useState(false);
   const [tab, setTab] = useState<Tab>("home");
   const [drives, setDrives] = useState<Drive[]>([]);
   const [fuels, setFuels] = useState<Fuel[]>([]);
@@ -51,13 +40,20 @@ function App() {
   };
 
   useEffect(() => {
-    refresh();
+    initStorage().then(() => {
+      refresh();
+      setReady(true);
+    });
   }, []);
 
+  if (!ready) {
+    return <div className="min-h-screen bg-background" />;
+  }
+
   return (
-    <div className="min-h-screen bg-background text-foreground">
+    <div className="min-h-dvh bg-background text-foreground">
       <Toaster />
-      <main className="mx-auto max-w-md px-4 pt-6 pb-28">
+      <main className="mx-auto max-w-md px-4 pt-6 pb-32">
         {tab === "home" && (
           <HomePage
             drives={drives}
@@ -93,13 +89,5 @@ function App() {
         onDeleted={refresh}
       />
     </div>
-  );
-}
-
-function Index() {
-  return (
-    <ClientOnly fallback={<div className="min-h-screen bg-background" />}>
-      <App />
-    </ClientOnly>
   );
 }
