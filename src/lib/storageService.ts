@@ -97,8 +97,7 @@ export const initStorage = async () => {
 };
 
 export const getCurrency = (): CurrencyCode => {
-  if (!isBrowser()) return DEFAULT_CURRENCY;
-  const v = localStorage.getItem(KEYS.currency) as CurrencyCode | null;
+  const v = memory[KEYS.currency] as CurrencyCode | undefined;
   return v && CURRENCIES.some((c) => c.code === v) ? v : DEFAULT_CURRENCY;
 };
 

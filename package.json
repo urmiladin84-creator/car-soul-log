@@ -1,5 +1,5 @@
 {
-  "name": "tanstack_start_ts",
+  "name": "my-driving-diary",
   "private": true,
   "sideEffects": false,
   "type": "module",
@@ -8,6 +8,8 @@
     "build": "vite build",
     "build:dev": "vite build --mode development",
     "preview": "vite preview",
+    "cap:sync": "cap sync android",
+    "cap:open:android": "cap open android",
     "lint": "eslint .",
     "format": "prettier --write ."
   },
