@@ -1,4 +1,8 @@
-// LocalStorage-backed offline storage for My Driving Diary
+// Offline storage for My Driving Diary.
+// Uses Capacitor Preferences on Android/iOS and localStorage in the browser.
+
+import { Capacitor } from "@capacitor/core";
+import { Preferences } from "@capacitor/preferences";
 
 export type Purpose = "Commute" | "Road Trip" | "Family Trip" | "Night Drive" | "Work" | "Errands" | "Other";
 
@@ -69,6 +73,28 @@ export const CURRENCIES: CurrencyInfo[] = [
 
 export const DEFAULT_CURRENCY: CurrencyCode = "USD";
 const CURRENCY_EVENT = "myDrivingDiary:currencyChanged";
+const isBrowser = () => typeof window !== "undefined";
+const isNative = () => isBrowser() && Capacitor.isNativePlatform();
+const memory: Partial<Record<(typeof KEYS)[keyof typeof KEYS], string>> = {};
+
+export const initStorage = async () => {
+  const keys = Object.values(KEYS);
+  if (isNative()) {
+    await Promise.all(
+      keys.map(async (key) => {
+        const { value } = await Preferences.get({ key });
+        if (value != null) memory[key] = value;
+      }),
+    );
+    return;
+  }
+
+  if (!isBrowser()) return;
+  keys.forEach((key) => {
+    const value = localStorage.getItem(key);
+    if (value != null) memory[key] = value;
+  });
+};
 
 export const getCurrency = (): CurrencyCode => {
   if (!isBrowser()) return DEFAULT_CURRENCY;
@@ -78,7 +104,8 @@ export const getCurrency = (): CurrencyCode => {
 
 export const setCurrency = (code: CurrencyCode) => {
   if (!isBrowser()) return;
-  localStorage.setItem(KEYS.currency, code);
+  memory[KEYS.currency] = code;
+  void persist(KEYS.currency, code);
   window.dispatchEvent(new CustomEvent(CURRENCY_EVENT, { detail: code }));
 };
 
@@ -120,12 +147,9 @@ export const onCurrencyChange = (cb: (code: CurrencyCode) => void) => {
   };
 };
 
-const isBrowser = () => typeof window !== "undefined";
-
 function read<T>(key: string): T[] {
-  if (!isBrowser()) return [];
   try {
-    const raw = localStorage.getItem(key);
+    const raw = memory[key as keyof typeof memory];
     return raw ? (JSON.parse(raw) as T[]) : [];
   } catch {
     return [];
@@ -133,8 +157,26 @@ function read<T>(key: string): T[] {
 }
 
 function write<T>(key: string, value: T[]) {
-  if (!isBrowser()) return;
-  localStorage.setItem(key, JSON.stringify(value));
+  const payload = JSON.stringify(value);
+  memory[key as keyof typeof memory] = payload;
+  void persist(key, payload);
+}
+
+async function persist(key: string, value: string) {
+  if (isNative()) {
+    await Preferences.set({ key, value });
+    return;
+  }
+  if (isBrowser()) localStorage.setItem(key, value);
+}
+
+async function removePersisted(key: string) {
+  delete memory[key as keyof typeof memory];
+  if (isNative()) {
+    await Preferences.remove({ key });
+    return;
+  }
+  if (isBrowser()) localStorage.removeItem(key);
 }
 
 export const uid = () => Math.random().toString(36).slice(2) + Date.now().toString(36);
@@ -191,10 +233,9 @@ export const importAll = (data: { drives?: Drive[]; fuels?: Fuel[]; services?: S
 };
 
 export const resetAll = () => {
-  if (!isBrowser()) return;
-  localStorage.removeItem(KEYS.drives);
-  localStorage.removeItem(KEYS.fuels);
-  localStorage.removeItem(KEYS.services);
+  void removePersisted(KEYS.drives);
+  void removePersisted(KEYS.fuels);
+  void removePersisted(KEYS.services);
 };
 
 export const APP_VERSION = "1.0.0";
