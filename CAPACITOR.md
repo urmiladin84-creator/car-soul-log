@@ -27,19 +27,18 @@ Capacitor is already in `package.json`:
 - `@capacitor/core`, `@capacitor/cli`
 - `@capacitor/android`, `@capacitor/ios`
 - `@capacitor/app`, `@capacitor/status-bar`, `@capacitor/haptics`
+- `@capacitor/preferences` for native offline storage
 
 ## 3. Build the web assets
 
-Capacitor copies a static `dist/` folder into the native app. Build the web
-app first:
+This is a regular Vite + React Capacitor app. The build creates a static
+`www/` folder with `www/index.html`, which Android Studio can bundle normally:
 
 ```bash
 bun run build
 ```
 
-If your build outputs to a different folder (TanStack Start may emit to
-`.output/public`), update `webDir` in `capacitor.config.ts` to match, then
-re-run the command.
+`capacitor.config.ts` is already set to `webDir: "www"`.
 
 ## 4. Add the native platforms
 
@@ -68,24 +67,10 @@ npx cap open ios       # opens Xcode
 
 From there, press **Run** to launch on an emulator / simulator / device.
 
-## 6. Hot reload during development (optional)
+## 6. Production / offline build
 
-`capacitor.config.ts` includes a `server.url` pointing at the Lovable preview.
-While that line is present, the installed app loads the live preview — you
-can edit in Lovable and see changes on the device instantly.
-
-For a **production / offline** build, comment out the `server.url` line so
-the app loads its bundled assets:
-
-```ts
-server: {
-  // url: "https://...lovableproject.com?forceHideBadge=true",
-  cleartext: true,
-  androidScheme: "https",
-},
-```
-
-Then rebuild and re-sync:
+No remote `server.url` is configured. The native app loads only the bundled
+files from `www/`, so it works offline after installation. After every change:
 
 ```bash
 bun run build
@@ -103,8 +88,8 @@ native folders exist, also update them in `android/app/build.gradle`
 
 ## 8. Common issues
 
-- **White screen in app**: `webDir` doesn't match your build output. Check
-  the folder produced by `bun run build` and update `capacitor.config.ts`.
+- **White screen in app**: run `bun run build` and confirm `www/index.html`
+  exists, then run `npx cap sync android` again.
 - **`cap` not found**: run via `npx cap ...` or add `./node_modules/.bin` to
   your PATH.
 - **Gradle / Android SDK errors**: open `android/` in Android Studio once and
