@@ -3,7 +3,7 @@ import type { CapacitorConfig } from "@capacitor/cli";
 const config: CapacitorConfig = {
   appId: "app.lovable.mydrivingdiary",
   appName: "My Driving Diary",
-  webDir: "www",
+  webDir: "dist",
   bundledWebRuntime: false,
   ios: {
     contentInset: "always",
